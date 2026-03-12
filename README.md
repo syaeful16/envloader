@@ -23,19 +23,13 @@ It supports default values, required validation, nested structs, slices, duratio
 go get github.com/syaeful16/envloader
 ```
 
+---
+
 ## Example
 
+### Config Struct
+
 ```go
-package main
-
-import (
-	"fmt"
-	"os"
-	"time"
-
-	"github.com/syaeful16/envloader"
-)
-
 type Config struct {
 	AppName string        `env:"APP_NAME" default:"MyApp"`
 	AppPort int           `env:"APP_PORT" default:"8080"`
@@ -43,23 +37,62 @@ type Config struct {
 	Expiry  time.Duration `env:"TOKEN_EXPIRY" default:"10m"`
 	Origins []string      `env:"ORIGINS"`
 }
+```
+
+### Example .env File
+
+```
+APP_NAME=DemoApp
+APP_PORT=9000
+APP_DEBUG=true
+TOKEN_EXPIRY=10m
+ORIGINS=a.com,b.com
+```
+
+### Load configuration
+
+```go
+package main
+
+import (
+    "log"
+
+    "github.com/joho/godotenv"
+    "github.com/syaeful16/envloader"
+)
 
 func main() {
-	os.Setenv("APP_NAME", "DemoApp")
-	os.Setenv("APP_PORT", "9000")
-	os.Setenv("APP_DEBUG", "true")
-	os.Setenv("TOKEN_EXPIRY", "10m")
-	os.Setenv("ORIGINS", "a.com,b.com")
 
-	cfg := &Config{}
+    godotenv.Load()
 
-	err := envloader.Load(cfg)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+    cfg := &Config{}
 
-	fmt.Printf("AppName: %s, AppPort: %d, Debug: %v, Expiry: %v, Origins: %v\n",
-		cfg.AppName, cfg.AppPort, cfg.Debug, cfg.Expiry, cfg.Origins)
+    err := envloader.Load(cfg)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    log.Println(cfg.App.Name)
 }
+```
+
+### Supported Tags
+
+| Tag        | Description                      |
+| ---------- | -------------------------------- |
+| `env`      | Environment variable name        |
+| `default`  | Default value (optional)         |
+| `required` | Field is required (optional)     |
+| `prefix`   | Prefix for environment variables |
+
+Example:
+
+```go
+Port int `env:"PORT" prefix:"DB" default:"5432"`
+```
+
+Env variable
+
+```
+DB_PORT=5432
 ```
